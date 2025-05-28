@@ -29,6 +29,20 @@ resource "aws_iam_user_login_profile" "sally" {
   user = aws_iam_user.sally.name
 }
 
+resource "aws_iam_group" "anti_cats" {
+  name = "anti_cats"
+}
+
+resource "aws_iam_group_membership" "anti_cats" {
+  name = "anti_cats"
+
+  users = [
+    aws_iam_user.sally.name,
+  ]
+
+  group = aws_iam_group.anti_cats.name
+}
+
 resource "aws_s3_bucket" "cat" {
   bucket_prefix = "cat"
 }
@@ -65,8 +79,8 @@ resource "aws_iam_policy" "s3" {
   policy = data.aws_iam_policy_document.s3.json
 }
 
-resource "aws_iam_user_policy_attachment" "s3" {
-  user       = aws_iam_user.sally.name
+resource "aws_iam_group_policy_attachment" "s3" {
+  group = aws_iam_group.anti_cats.name
   policy_arn = aws_iam_policy.s3.arn
 }
 
