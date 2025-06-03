@@ -17,10 +17,29 @@ resource "aws_elastic_beanstalk_application" "tftest" {
   description = "tf-test-desc"
 }
 
+resource "aws_s3_bucket" "default" {
+  bucket_prefix = "tftest.appversion.bucket"
+}
+
+resource "aws_s3_object" "default" {
+  bucket = aws_s3_bucket.default.id
+  key    = "beanstalk/nodejs.zip"
+  source = "nodejs.zip"
+}
+
+resource "aws_elastic_beanstalk_application_version" "default" {
+  name        = "tf-test-version-label"
+  application = "tf-test-name"
+  description = "application version created by terraform"
+  bucket      = aws_s3_bucket.default.id
+  key         = aws_s3_object.default.id
+}
+
 resource "aws_elastic_beanstalk_environment" "tfenvtest" {
   name                = "tf-test-name"
   application         = aws_elastic_beanstalk_application.tftest.name
   solution_stack_name = "64bit Amazon Linux 2023 v6.5.2 running Node.js 22"
+  version_label        = "tf-test-version-label"
 
   setting {
     namespace = "aws:autoscaling:launchconfiguration"
