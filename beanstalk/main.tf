@@ -23,8 +23,8 @@ resource "aws_s3_bucket" "default" {
 
 resource "aws_s3_object" "default" {
   bucket = aws_s3_bucket.default.id
-  key    = "beanstalk/nodejs.zip"
-  source = "nodejs.zip"
+  key    = "beanstalk/Dockerfile"
+  source = "Dockerfile"
 }
 
 resource "aws_elastic_beanstalk_application_version" "default" {
@@ -38,7 +38,7 @@ resource "aws_elastic_beanstalk_application_version" "default" {
 resource "aws_elastic_beanstalk_environment" "tfenvtest" {
   name                = "tf-test-name"
   application         = aws_elastic_beanstalk_application.tftest.name
-  solution_stack_name = "64bit Amazon Linux 2023 v6.5.2 running Node.js 22"
+  solution_stack_name = "64bit Amazon Linux 2023 v4.5.2 running Docker"
   version_label        = "tf-test-version-label"
 
   setting {
