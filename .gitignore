@@ -36,4 +36,8 @@ override.tf.json
 .terraformrc
 terraform.rc
 
-*/pil
+**/pil
+**/*.pem
+
+**/layer_packages
+**/layer_zips
