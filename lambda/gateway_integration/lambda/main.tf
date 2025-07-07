@@ -20,6 +20,10 @@ variable "parent_id" {
     type = string
 }
 
+variable "gateway_execution_arn" {
+    type = string
+}
+
 data "archive_file" "deployment" {
   type        = "zip"
   source_file = "${path.module}/deployment.py"
@@ -66,6 +70,17 @@ resource "aws_iam_role_policy_attachment" "lambda_exec" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
+resource "aws_lambda_permission" "gateway_lambda" {
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = "${aws_lambda_function.out_ip.function_name}"
+  principal     = "apigateway.amazonaws.com"
+
+  # The /*/* portion grants access from any method on any resource
+  # within the API Gateway "REST API".
+  source_arn = "${var.gateway_execution_arn}/*/*"
+}
+
 resource "aws_api_gateway_resource" "lambda" {
   rest_api_id = var.rest_api_id
   parent_id   = var.parent_id
@@ -84,6 +99,7 @@ resource "aws_api_gateway_integration" "lambda_get" {
   rest_api_id   = var.rest_api_id
   resource_id   = aws_api_gateway_resource.lambda.id
   http_method          = aws_api_gateway_method.lambda_get.http_method
+  integration_http_method = "POST"
   type                 = "AWS_PROXY"
   uri = aws_lambda_function.out_ip.invoke_arn
 }
@@ -92,6 +108,5 @@ resource "aws_api_gateway_method_response" "lambda_get_200" {
   rest_api_id   = var.rest_api_id
   resource_id   = aws_api_gateway_resource.lambda.id
   http_method = aws_api_gateway_method.lambda_get.http_method
-  status_code = "200"
+  status_code = 200
 }
-
