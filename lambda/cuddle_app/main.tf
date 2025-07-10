@@ -12,10 +12,22 @@ provider "aws" {
   region  = "us-east-1"
 }
 
-resource "aws_ses_email_identity" "sender" {
-  email = "steven0herlihy+cuddle-app-sender@gmail.com"
+module "messager" {
+  source = "./messager"
 }
 
-resource "aws_ses_email_identity" "receiver" {
-  email = "steven0herlihy+cuddle-app-receiver@gmail.com"
+module "ingest" {
+  source = "./ingest"
+
+  state_machine_arn = module.messager.state_machine_arn
+}
+
+module "frontend" {
+  source = "./frontend"
+
+  api_url = module.ingest.api_url
+}
+
+output "frontend_endpoint" {
+  value = module.frontend.website_endpoint
 }
