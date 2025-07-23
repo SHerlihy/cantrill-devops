@@ -20,8 +20,17 @@ variable "domain_name" {
     type = string
 }
 
+variable "zone_id" {
+    type = string
+}
+
 resource "aws_eip" "server" {
   domain   = "vpc"
+}
+
+module "failover" {
+  source = "./failover"
+  domain_name = var.domain_name
 }
 
 resource "aws_eip_association" "eip_assoc" {
@@ -29,72 +38,47 @@ resource "aws_eip_association" "eip_assoc" {
   allocation_id = aws_eip.server.id
 }
 
-resource "aws_s3_bucket" "failover" {
-# bucket = "www.${var.domain_name}"
+resource "aws_route53_health_check" "eip" {
+  ip_address              = aws_eip.server.public_ip
+  port              = 80
+  type              = "HTTP"
+  resource_path     = "/index.html"
+  failure_threshold = "5"
+  request_interval  = "10"
 }
 
-resource "aws_s3_bucket_public_access_block" "failover" {
-  bucket = aws_s3_bucket.failover.id
+resource "aws_route53_record" "a4l" {
+  health_check_id = aws_route53_health_check.eip.id
 
-  block_public_acls       = false
-  block_public_policy     = false
-  ignore_public_acls      = false
-  restrict_public_buckets = false
-}
+  zone_id = var.zone_id
+  name    = "www.${var.domain_name}"
+  type    = "A"
+  ttl     = 300
+  records = [aws_eip.server.public_ip]
 
-#resource "aws_s3_bucket_acl" "failover" {
-#  bucket = aws_s3_bucket.failover.id
-#  acl    = "public-read"
-#}
-
-resource "aws_s3_bucket_policy" "failover" {
-  bucket = aws_s3_bucket.failover.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Sid       = "PublicReadGetObject"
-        Effect    = "Allow"
-        Principal = "*"
-        Action    = "s3:GetObject"
-        Resource  = "${aws_s3_bucket.failover.arn}/*"
-      },
-    ]
-  })
-}
-
-locals {
-  mime_types = {
-    "html" = "text/html"
-    "css"  = "text/css"
-    "js"   = "application/javascript"
-    "png"  = "image/png"
-    "jpg"  = "image/jpeg"
-    "gif"  = "image/gif"
-  }
-}
-
-resource "aws_s3_object" "failover" {
-  for_each = fileset("${path.module}/website", "**/*")
-
-  bucket       = aws_s3_bucket.failover.id
-  key          = each.value
-  source       = "${path.module}/website/${each.value}"
-
-  content_type = lookup(local.mime_types, split(".", each.value)[length(split(".", each.value)) - 1], "application/octet-stream")
-
-#  acl = "public-read"
-}
-
-resource "aws_s3_bucket_website_configuration" "failover" {
-  bucket = aws_s3_bucket.failover.id
-
-  index_document {
-    suffix = "index.html"
+  failover_routing_policy {
+    type = "PRIMARY"
   }
 
-  error_document {
-    key = "index.html"
+  set_identifier = "a4l"
+}
+
+resource "aws_route53_record" "failover" {
+  #  health_check_id = aws_route53_health_check.eip.id
+
+  zone_id = var.zone_id
+  name    = "www.${var.domain_name}"
+  type    = "A"
+
+  alias {
+    name = module.failover.domain
+    zone_id = module.failover.zone_id
+    evaluate_target_health = false
   }
+
+  failover_routing_policy {
+    type = "SECONDARY"
+  }
+
+  set_identifier = "failover"
 }
