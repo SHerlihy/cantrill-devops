@@ -83,4 +83,5 @@ vpc_security_group_ids = [local.db_sg]
 availability_zone = "us-east-1a"
 
   allocated_storage    = 10
+  skip_final_snapshot = true
 }
