@@ -59,7 +59,7 @@ resource "aws_ssm_parameter" "wp_db_endpoint" {
 tier = "Standard"
 type = "String"
 data_type = "text"
-value = aws_db_instance.db.endpoint
+value = aws_db_instance.db.address
 }
 
 resource "aws_db_subnet_group" "db" {
@@ -68,7 +68,7 @@ resource "aws_db_subnet_group" "db" {
 
 resource "aws_db_instance" "db" {
   engine               = "mysql"
-  engine_version       = "8.0"
+  engine_version       = "8.0.43"
   db_subnet_group_name = aws_db_subnet_group.db.id
 
   db_name              = local.db_name

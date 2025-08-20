@@ -74,7 +74,7 @@ resource "aws_autoscaling_group" "frontend" {
   vpc_zone_identifier = local.lb_subnets
 
   launch_template {
-    id      = aws_launch_template.example.id
+    id      = aws_launch_template.frontend.id
     version = "$Latest"
   }
 
@@ -89,36 +89,24 @@ resource "aws_autoscaling_group" "frontend" {
 #   lb_target_group_arn                    = aws_lb_target_group.root.id
 # }
 
-data "aws_ami" "amazon_linux_2" {
+data "aws_ami" "amazon_linux_2023" {
   most_recent = true
   owners      = ["amazon"]
 
   filter {
     name   = "name"
-    values = ["amzn2-ami-hvm-*-x86_64-ebs"]
+    values = ["al2023-ami-*-x86_64"]
+  }
+
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
   }
 
   filter {
     name   = "virtualization-type"
     values = ["hvm"]
   }
-}
-
-resource "aws_launch_template" "example" {
-  credit_specification {
-    cpu_credits = "standard"
-  }
-  iam_instance_profile {
-    arn = local.instance_profile
-  }
-  network_interfaces {
-    associate_public_ip_address = true
-    security_groups             = [local.instance_sg]
-  }
-  instance_type = "t2.micro"
-  image_id      = data.aws_ami.amazon_linux_2.id
-
-  user_data = filebase64("${path.module}/example.sh")
 }
 
 resource "aws_launch_template" "frontend" {
@@ -131,9 +119,10 @@ resource "aws_launch_template" "frontend" {
   network_interfaces {
     associate_public_ip_address = true
     security_groups             = [local.instance_sg]
+    subnet_id = local.lb_subnet
   }
   instance_type = "t2.micro"
-  image_id      = data.aws_ami.amazon_linux_2.id
+  image_id      = data.aws_ami.amazon_linux_2023.id
 
   user_data = filebase64("${path.module}/user_data.sh")
 }

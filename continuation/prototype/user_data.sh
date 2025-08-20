@@ -1,10 +1,5 @@
 #!/bin/bash -xe
 
-yum install xfsprogs
-mkfs -t xfs /dev/xvdf
-mkdir /data
-mount /dev/xvdf /data
-
 DBPassword=$(aws ssm get-parameters --region us-east-1 --names /proto/A4L/Wordpress/DBPassword --with-decryption --query Parameters[0].Value)
 DBPassword=`echo $DBPassword | sed -e 's/^"//' -e 's/"$//'`
 
