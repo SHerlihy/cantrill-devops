@@ -31,7 +31,3 @@ module "efs" {
 
   subnets = var.efs_subnets
 }
-
-module "service" {
-  source = "./service"
-}

@@ -24,22 +24,8 @@ locals {
   instance_profile = "arn:aws:iam::933142127213:instance-profile/A4LVPC-WordpressInstanceProfile-REQ3g5kwkuKD"
 }
 
-resource "aws_ssm_parameter" "elb_dns" {
-  name        = "/A4L/Wordpress/ALBDNSNAME"
-  description = "DNS Name of the Application Load Balancer for wordpress"
-  tier        = "Standard"
-  type        = "String"
-  data_type   = "text"
-  value       = aws_lb.lb.dns_name
-}
-
-resource "aws_lb" "lb" {
-  name = local.lb_name
-
-  subnets = local.lb_subnets
-
-  security_groups    = [local.lb_sg]
-  load_balancer_type = "application"
+variable "lb_arn" {
+  type = string
 }
 
 resource "aws_lb_target_group" "root" {
@@ -56,7 +42,7 @@ resource "aws_lb_target_group" "root" {
 }
 
 resource "aws_lb_listener" "frontend" {
-  load_balancer_arn = aws_lb.lb.arn
+  load_balancer_arn = var.lb_arn
   port              = "80"
   protocol          = "HTTP"
 
@@ -124,5 +110,34 @@ resource "aws_launch_template" "frontend" {
   instance_type = "t2.micro"
   image_id      = data.aws_ami.amazon_linux_2023.id
 
+
+    block_device_mappings {
+    device_name = "/dev/xvda"
+
+    ebs {
+      delete_on_termination = true
+      volume_size = 30
+      volume_type = "gp3"
+    }
+  }
+
+  key_name = aws_key_pair.prod.key_name
+
   user_data = filebase64("${path.module}/user_data.sh")
+}
+
+resource "tls_private_key" "prod" {
+  algorithm = "RSA"
+  rsa_bits  = 4096
+}
+
+resource "aws_key_pair" "prod" {
+  key_name   = "prod"
+  public_key = tls_private_key.prod.public_key_openssh
+}
+
+resource "local_file" "prod" {
+  content  = tls_private_key.prod.private_key_pem
+  filename = "${path.module}/ec2-key.pem"
+  file_permission = "0400"
 }

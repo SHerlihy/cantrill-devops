@@ -42,9 +42,20 @@ data_type = "text"
 value = local.db_user
 }
 
+resource "aws_ssm_parameter" "wp_db_root_password" {
+    name = "/A4L/Wordpress/DBRootPassword"
+    description = "Wordpress DBRoot Password"
+tier = "Standard"
+type = "SecureString"
+
+key_id = "alias/aws/ssm"
+
+value = local.db_password
+}
+
 resource "aws_ssm_parameter" "wp_db_password" {
     name = "/A4L/Wordpress/DBPassword"
-    description = "Wordpress DBRoot Password"
+    description = "Wordpress DB Password"
 tier = "Standard"
 type = "SecureString"
 
