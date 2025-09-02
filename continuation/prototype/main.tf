@@ -13,12 +13,6 @@ provider "aws" {
 }
 
 locals {
-  #  lb_subnets       = ["subnet-0169674b1b60b0805", "subnet-08fef8aaa801ca34d", "subnet-08a7fcf33aa5596d4"]
-  #  tg_name          = "A4LWORDPRESSALBTG"
-  #  lb_name          = "A4LWORDPRESSALB"
-  #  asg_name         = "A4LWORDPRESSASG"
-  #  vpc              = "vpc-0172f519fb6d14516"
-
   instance_sg      = "sg-07332c32592d24281"
   instance_profile = "arn:aws:iam::933142127213:instance-profile/A4LVPC-WordpressInstanceProfile-REQ3g5kwkuKD"
   lb_sg            = "sg-0b680c4bc28be5b90"
@@ -75,7 +69,7 @@ resource "aws_launch_template" "prototype" {
 
     ebs {
       delete_on_termination = true
-      volume_size = 20
+      volume_size = 30
       volume_type = "gp3"
     }
   }
@@ -99,4 +93,8 @@ resource "local_file" "private_key" {
   content  = tls_private_key.this.private_key_pem
   filename = "${path.module}/ec2-key.pem"
   file_permission = "0400"
+}
+
+output "prototype_pub_ip" {
+  value = aws_instance.prototype.public_ip
 }

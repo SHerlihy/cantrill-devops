@@ -36,10 +36,10 @@ rm -f latest.tar.gz
 
 rm -f /var/www/html/wp-config.php
 mv /var/www/html/wp-config-sample.php /var/www/html/wp-config.php
-sed -i "s/'localhost'/'$DBEndpoint'/g" /var/www/html/wp-config.php
-sed -i "s/'database_name_here'/'$DBName'/g" /var/www/html/wp-config.php
-sed -i "s/'username_here'/'$DBUser'/g" /var/www/html/wp-config.php
-sed -i "s/'password_here'/'$DBPassword'/g" /var/www/html/wp-config.php
+sed -i "s/'DB_NAME'.*$/'DB_NAME', '$DBName' );/g" /var/www/html/wp-config.php
+sed -i "s/'DB_USER'.*$/'DB_USER', '$DBUser' );/g" /var/www/html/wp-config.php
+sed -i "s/'DB_PASSWORD'.*$/'DB_PASSWORD', '$DBPassword' );/g" /var/www/html/wp-config.php
+sed -i "s/'DB_HOST'.*$/'DB_HOST', '$DBEndpoint' );/g" /var/www/html/wp-config.php
 
 # cat << EOF >> /var/www/html/wp-config.php
 # // Set the site URL dynamically
@@ -80,15 +80,19 @@ chmod 755 /home/ec2-user/update_wp_ip.sh
 echo "/home/ec2-user/update_wp_ip.sh" >> /etc/rc.local
 /home/ec2-user/update_wp_ip.sh
 
-mkdir -p /var/www/html/wp-content
-#chown -R ec2-user:apache /var/www/
-echo -e "$EFSFSID:/ /var/www/html/wp-content efs _netdev,tls,iam 0 0" >> /etc/fstab
-mount -a -t efs defaults
-
-usermod -a -G apache ec2-user   
-chown -R ec2-user:apache /var/www
-chmod 2775 /var/www
-find /var/www -type d -exec chmod 2775 {} \;
-find /var/www -type f -exec chmod 0664 {} \;
-
-systemctl restart httpd
+# sudo bash
+#
+# mkdir -p /var/www/html/wp-content
+# chown -R ec2-user:apache /var/www/
+# echo -e "$EFSFSID:/ /var/www/html/wp-content efs _netdev,tls,iam 0 0" >> /etc/fstab
+# mount -a -t efs defaults
+#
+# usermod -a -G apache ec2-user   
+# chown -R ec2-user:apache /var/www
+# chmod 2775 /var/www
+# find /var/www -type d -exec chmod 2775 {} \;
+# find /var/www -type f -exec chmod 0664 {} \;
+#
+# systemctl restart httpd
+#
+# exit

@@ -36,14 +36,15 @@ DBName=`echo $DBName | sed -e 's/^"//' -e 's/"$//'`
 DBEndpoint=$(aws ssm get-parameters --region us-east-1 --names /A4L/Wordpress/DBEndpoint --query Parameters[0].Value)
 DBEndpoint=`echo $DBEndpoint | sed -e 's/^"//' -e 's/"$//'`
 
-#need to update pass to rds
-
-#password omitted as stored encypted
-#to be entered manually
-mysql -h $DBEndpoint -u $DBUser -p $DBName < a4lWordPress.sql 
+mysql -h $DBEndpoint -u $DBUser -p$DBPassword $DBName < a4lWordPress.sql
 
 #to swap db
-sudo sed -i "s/'localhost'/'$DBEndpoint'/g" /var/www/html/wp-config.php
+sudo sed -i "s/'DB_NAME'.*$/'DB_NAME', '$DBName' );/g" /var/www/html/wp-config.php
+sudo sed -i "s/'DB_USER'.*$/'DB_USER', '$DBUser' );/g" /var/www/html/wp-config.php
+sudo sed -i "s/'DB_PASSWORD'.*$/'DB_PASSWORD', '$DBPassword' );/g" /var/www/html/wp-config.php
+sudo sed -i "s/'DB_HOST'.*$/'DB_HOST', '$DBEndpoint' );/g" /var/www/html/wp-config.php
 
 sudo systemctl disable mariadb
 sudo systemctl stop mariadb
+
+# RENAME USER '$DBUser'@'localhost' TO '$DBUser'@'%';

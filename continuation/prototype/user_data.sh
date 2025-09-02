@@ -12,8 +12,9 @@ DBUser=`echo $DBUser | sed -e 's/^"//' -e 's/"$//'`
 DBName=$(aws ssm get-parameters --region us-east-1 --names /proto/A4L/Wordpress/DBName --query Parameters[0].Value)
 DBName=`echo $DBName | sed -e 's/^"//' -e 's/"$//'`
 
-DBEndpoint=$(aws ssm get-parameters --region us-east-1 --names /proto/A4L/Wordpress/DBEndpoint --query Parameters[0].Value)
-DBEndpoint=`echo $DBEndpoint | sed -e 's/^"//' -e 's/"$//'`
+#DBEndpoint=$(aws ssm get-parameters --region us-east-1 --names /proto/A4L/Wordpress/DBEndpoint --query Parameters[0].Value)
+#DBEndpoint=`echo $DBEndpoint | sed -e 's/^"//' -e 's/"$//'`
+DBEndpoint='127.0.0.1'
 
 dnf -y update
 
@@ -34,10 +35,10 @@ rm -R wordpress
 rm latest.tar.gz
 
 sudo cp ./wp-config-sample.php ./wp-config.php
-sed -i "s/'database_name_here'/'$DBName'/g" wp-config.php
-sed -i "s/'username_here'/'$DBUser'/g" wp-config.php
-sed -i "s/'password_here'/'$DBPassword'/g" wp-config.php
-sed -i "s/'localhost'/'$DBEndpoint'/g" wp-config.php
+sudo sed -i "s/'DB_NAME'.*$/'DB_NAME', '$DBName' );/g" /var/www/html/wp-config.php
+sudo sed -i "s/'DB_USER'.*$/'DB_USER', '$DBUser' );/g" /var/www/html/wp-config.php
+sudo sed -i "s/'DB_PASSWORD'.*$/'DB_PASSWORD', '$DBPassword' );/g" /var/www/html/wp-config.php
+sudo sed -i "s/'DB_HOST'.*$/'DB_HOST', '$DBEndpoint' );/g" /var/www/html/wp-config.php
 
 usermod -a -G apache ec2-user   
 chown -R ec2-user:apache /var/www
@@ -45,10 +46,10 @@ chmod 2775 /var/www
 find /var/www -type d -exec chmod 2775 {} \;
 find /var/www -type f -exec chmod 0664 {} \;
 
+#changed from localhost to all/%
 echo "CREATE DATABASE $DBName;" >> /tmp/db.setup
-echo "CREATE USER '$DBUser'@'localhost' IDENTIFIED BY '$DBPassword';" >> /tmp/db.setup
-echo "GRANT ALL ON $DBName.* TO '$DBUser'@'localhost';" >> /tmp/db.setup
+echo "CREATE USER '$DBUser'@'%' IDENTIFIED BY '$DBPassword';" >> /tmp/db.setup
+echo "GRANT ALL ON $DBName.* TO '$DBUser'@'%';" >> /tmp/db.setup
 echo "FLUSH PRIVILEGES;" >> /tmp/db.setup
 mysql -u root --password=$DBRootPassword < /tmp/db.setup
 rm /tmp/db.setup
-

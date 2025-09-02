@@ -95,4 +95,16 @@ availability_zone = "us-east-1a"
 
   allocated_storage    = 10
   skip_final_snapshot = true
+
+  parameter_group_name = aws_db_parameter_group.skip_name_resolve.name
+}
+
+resource "aws_db_parameter_group" "skip_name_resolve" {
+  family = "mysql8.0"
+
+  parameter {
+    name  = "skip_name_resolve"
+    value = 1
+    apply_method="pending-reboot"
+  }
 }
