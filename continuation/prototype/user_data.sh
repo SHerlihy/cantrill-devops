@@ -12,9 +12,8 @@ DBUser=`echo $DBUser | sed -e 's/^"//' -e 's/"$//'`
 DBName=$(aws ssm get-parameters --region us-east-1 --names /proto/A4L/Wordpress/DBName --query Parameters[0].Value)
 DBName=`echo $DBName | sed -e 's/^"//' -e 's/"$//'`
 
-#DBEndpoint=$(aws ssm get-parameters --region us-east-1 --names /proto/A4L/Wordpress/DBEndpoint --query Parameters[0].Value)
-#DBEndpoint=`echo $DBEndpoint | sed -e 's/^"//' -e 's/"$//'`
-DBEndpoint='127.0.0.1'
+DBEndpoint=$(aws ssm get-parameters --region us-east-1 --names /proto/A4L/Wordpress/DBEndpoint --query Parameters[0].Value)
+DBEndpoint=`echo $DBEndpoint | sed -e 's/^"//' -e 's/"$//'`
 
 dnf -y update
 
@@ -46,7 +45,6 @@ chmod 2775 /var/www
 find /var/www -type d -exec chmod 2775 {} \;
 find /var/www -type f -exec chmod 0664 {} \;
 
-#changed from localhost to all/%
 echo "CREATE DATABASE $DBName;" >> /tmp/db.setup
 echo "CREATE USER '$DBUser'@'%' IDENTIFIED BY '$DBPassword';" >> /tmp/db.setup
 echo "GRANT ALL ON $DBName.* TO '$DBUser'@'%';" >> /tmp/db.setup

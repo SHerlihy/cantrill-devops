@@ -12,15 +12,6 @@ provider "aws" {
   region  = "us-east-1"
 }
 
-variable "subnets" {
-  type = list(string)
-}
-
-locals {
-    efs_name = "A4L-WORDPRESS-CONTENT"
-    efs_sg = "sg-065cbcc53665e077d"
-}
-
 resource "aws_ssm_parameter" "efs_id" {
     name = "/A4L/Wordpress/EFSFSID"
     description = "File System ID for Wordpress Content (wp-content)"
@@ -45,5 +36,5 @@ resource "aws_efs_mount_target" "subnets" {
 
   file_system_id  = aws_efs_file_system.efs.id
   subnet_id       = each.key
-  security_groups = [local.efs_sg]
+  security_groups = [var.efs_sg]
 }

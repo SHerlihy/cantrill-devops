@@ -9,7 +9,7 @@ terraform {
 
 provider "aws" {
   profile = "cantrill-general-admin"
-  region  = "us-east-1"
+ region  = "us-east-1"
 }
 
 data "aws_ami" "amazon_linux_2023" {
@@ -32,17 +32,7 @@ data "aws_ami" "amazon_linux_2023" {
   }
 }
 
-resource "aws_instance" "prototype" {
-  launch_template {
-    id = aws_launch_template.prototype.id
-  }
-
-  tags = {
-    Name = "proto"
-  }
-}
-
-resource "aws_launch_template" "prototype" {
+resource "aws_launch_template" "frontend" {
   credit_specification {
     cpu_credits = "standard"
   }
@@ -52,10 +42,11 @@ resource "aws_launch_template" "prototype" {
   network_interfaces {
     associate_public_ip_address = true
     security_groups             = [var.frontend_sg]
-    subnet_id                   = var.lb_subnet
+    subnet_id = var.lb_subnet
   }
   instance_type = "t2.micro"
   image_id      = data.aws_ami.amazon_linux_2023.id
+
 
     block_device_mappings {
     device_name = "/dev/xvda"
@@ -67,27 +58,27 @@ resource "aws_launch_template" "prototype" {
     }
   }
 
-  key_name = aws_key_pair.generated_key.key_name
+  key_name = aws_key_pair.prod.key_name
 
   user_data = filebase64("${path.module}/user_data.sh")
 }
 
-resource "tls_private_key" "this" {
+resource "tls_private_key" "prod" {
   algorithm = "RSA"
   rsa_bits  = 4096
 }
 
-resource "aws_key_pair" "generated_key" {
-  key_name   = "ec2-ssh-key"
-  public_key = tls_private_key.this.public_key_openssh
+resource "aws_key_pair" "prod" {
+  key_name   = "prod"
+  public_key = tls_private_key.prod.public_key_openssh
 }
 
-resource "var_file" "private_key" {
-  content  = tls_private_key.this.private_key_pem
+resource "var_file" "prod" {
+  content  = tls_private_key.prod.private_key_pem
   filename = "${path.module}/ec2-key.pem"
   file_permission = "0400"
 }
 
-output "prototype_pub_ip" {
-  value = aws_instance.prototype.public_ip
+output "launch_id" {
+    value = aws_launch_template.frontend.id
 }

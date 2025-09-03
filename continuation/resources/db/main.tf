@@ -12,25 +12,13 @@ provider "aws" {
   region  = "us-east-1"
 }
 
-variable "subnets" {
-    type = set(string)
-}
-
-locals {
-db_name = "a4lwordpressdb"
-db_user = "a4lwordpressuser"
-db_password = "4n1m4154L1f3"
-
-db_sg = "sg-06cf4aa0df76e307b"
-}
-
 resource "aws_ssm_parameter" "wp_db_name" {
     name = "/A4L/Wordpress/DBName"
     description = "Wordpress Database Name"
 tier = "Standard"
 type = "String"
 data_type = "text"
-value = local.db_name
+value = var.db_name
 }
 
 resource "aws_ssm_parameter" "wp_db_user" {
@@ -39,7 +27,7 @@ resource "aws_ssm_parameter" "wp_db_user" {
 tier = "Standard"
 type = "String"
 data_type = "text"
-value = local.db_user
+value = var.db_user
 }
 
 resource "aws_ssm_parameter" "wp_db_root_password" {
@@ -50,7 +38,7 @@ type = "SecureString"
 
 key_id = "alias/aws/ssm"
 
-value = local.db_password
+value = var.db_password
 }
 
 resource "aws_ssm_parameter" "wp_db_password" {
@@ -61,7 +49,7 @@ type = "SecureString"
 
 key_id = "alias/aws/ssm"
 
-value = local.db_password
+value = var.db_password
 }
 
 resource "aws_ssm_parameter" "wp_db_endpoint" {
@@ -82,14 +70,14 @@ resource "aws_db_instance" "db" {
   engine_version       = "8.0.43"
   db_subnet_group_name = aws_db_subnet_group.db.id
 
-  db_name              = local.db_name
-  username             = local.db_user
-  password             = local.db_password
+  db_name              = var.db_name
+  username             = var.db_user
+  password             = var.db_password
   instance_class       = "db.t3.micro"
 
 network_type = "IPV4"
 
-vpc_security_group_ids = [local.db_sg]
+vpc_security_group_ids = [var.db_sg]
 
 availability_zone = "us-east-1a"
 
