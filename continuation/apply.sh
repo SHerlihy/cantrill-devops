@@ -23,7 +23,7 @@ cd ..
 cd ./service/server
 terraform init
 terraform apply -var-file="../../shared/frontend.tfvars" --auto-approve
-terraform output >> ./output.tfvars
+terraform output > ./output.tfvars
 cd ../..
 
 cd ./service/scaler

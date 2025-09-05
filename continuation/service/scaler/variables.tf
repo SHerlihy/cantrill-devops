@@ -10,12 +10,8 @@ variable "lb_subnet" {
 type = string
 }
 
-variable "lb_arn" {
-type = string
-}
-
 variable "lb_subnets" {
-type = string
+type = list(string)
 }
 
 variable "tg_name" {
@@ -30,14 +26,9 @@ variable "asg_name" {
 type = string
 }
 
-variable "vpc    " {
+variable "vpc" {
 type = string
 }
-
-variable "lb_sg   " {
-type = string
-}
-
 
 variable "launch_id" {
 type = string

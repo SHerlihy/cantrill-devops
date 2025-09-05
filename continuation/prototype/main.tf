@@ -82,7 +82,7 @@ resource "aws_key_pair" "generated_key" {
   public_key = tls_private_key.this.public_key_openssh
 }
 
-resource "var_file" "private_key" {
+resource "local_file" "private_key" {
   content  = tls_private_key.this.private_key_pem
   filename = "${path.module}/ec2-key.pem"
   file_permission = "0400"

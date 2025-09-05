@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PROTO_IP=$1
+ACCESS=13-223-60-7
 
-ssh ec2-user@$PROTO_IP "bash -s" < ./db_migration.sh
-ssh ec2-user@$PROTO_IP "bash -s" < ./efs_migration.sh
+ssh -i "./ec2-key.pem" ec2-user@ec2-$ACCESS.compute-1.amazonaws.com "bash -s" < ./db_migration.sh
+ssh -i "./ec2-key.pem" ec2-user@ec2-$ACCESS.compute-1.amazonaws.com "bash -s" < ./efs_migration.sh

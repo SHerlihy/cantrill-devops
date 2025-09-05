@@ -26,7 +26,7 @@ resource "aws_lb" "lb" {
 
   subnets = var.lb_subnets
 
-  security_groups    = [var.lb_sg]
+  security_groups    = [var.frontend_sg]
   load_balancer_type = "application"
 }
 
@@ -44,7 +44,7 @@ resource "aws_lb_target_group" "root" {
 }
 
 resource "aws_lb_listener" "frontend" {
-  load_balancer_arn = var.lb_arn
+  load_balancer_arn = aws_lb.lb.arn
   port              = "80"
   protocol          = "HTTP"
 

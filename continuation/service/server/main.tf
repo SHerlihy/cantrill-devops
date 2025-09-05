@@ -73,7 +73,7 @@ resource "aws_key_pair" "prod" {
   public_key = tls_private_key.prod.public_key_openssh
 }
 
-resource "var_file" "prod" {
+resource "local_file" "prod" {
   content  = tls_private_key.prod.private_key_pem
   filename = "${path.module}/ec2-key.pem"
   file_permission = "0400"
