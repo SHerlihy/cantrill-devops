@@ -13,11 +13,11 @@ terraform destroy --auto-approve
 cd ../..
 
 cd ./prototype
-terraform destroy -var-file="./terraform.tfvars" -var-file="../shared/frontend.tfvars" --auto-approve
+terraform destroy -var-file="../shared/frontend.tfvars" --auto-approve
 cd ..
 
 cd ./service/server
-terraform destroy -var-file="./terraform.tfvars" -var-file="../../shared/frontend.tfvars" --auto-approve
+terraform destroy -var-file="../../shared/frontend.tfvars" --auto-approve
 cd ../..
 
 cd ./service/scaler
