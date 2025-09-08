@@ -21,6 +21,7 @@ dnf install wget php-mysqlnd httpd php-fpm php-mysqli mariadb105-server php-json
 
 systemctl enable httpd
 systemctl start httpd
+
 systemctl enable mariadb
 systemctl start mariadb
 

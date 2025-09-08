@@ -16,7 +16,8 @@ DBEndpoint=$(aws ssm get-parameters --region us-east-1 --names /A4L/Wordpress/DB
 DBEndpoint=`echo $DBEndpoint | sed -e 's/^"//' -e 's/"$//'`
 
 dnf -y update
-dnf install wget php-mysqlnd httpd php-fpm php-mysqli mariadb105-server php-json php php-devel stress -y amazon-efs-utils
+
+dnf install wget php-mysqlnd httpd php-fpm php-mysqli mariadb105-server php-json php php-devel stress -y
 
 systemctl enable httpd
 systemctl start httpd
@@ -24,24 +25,15 @@ systemctl start httpd
 wget http://wordpress.org/latest.tar.gz -P /var/www/html
 cd /var/www/html
 tar -zxvf latest.tar.gz
-/bin/cp -rvf wordpress/* .
-rm -Rf wordpress
-rm -f latest.tar.gz
+cp -rvf wordpress/* .
+rm -R wordpress
+rm latest.tar.gz
 
-rm -f /var/www/html/wp-config.php
-mv /var/www/html/wp-config-sample.php /var/www/html/wp-config.php
-sed -i "s/'DB_NAME'.*$/'DB_NAME', '$DBName' );/g" /var/www/html/wp-config.php
-sed -i "s/'DB_USER'.*$/'DB_USER', '$DBUser' );/g" /var/www/html/wp-config.php
-sed -i "s/'DB_PASSWORD'.*$/'DB_PASSWORD', '$DBPassword' );/g" /var/www/html/wp-config.php
-sed -i "s/'DB_HOST'.*$/'DB_HOST', '$DBEndpoint' );/g" /var/www/html/wp-config.php
-
-# cat << EOF >> /var/www/html/wp-config.php
-# // Set the site URL dynamically
-# if (null !== $_SERVER['HTTP_HOST']) {
-#     define('WP_HOME', 'https://' . $_SERVER['HTTP_HOST']);
-#     define('WP_SITEURL', 'https://' . $_SERVER['HTTP_HOST']);
-# }
-# EOF
+sudo cp ./wp-config-sample.php ./wp-config.php
+sudo sed -i "s/'DB_NAME'.*$/'DB_NAME', '$DBName' );/g" /var/www/html/wp-config.php
+sudo sed -i "s/'DB_USER'.*$/'DB_USER', '$DBUser' );/g" /var/www/html/wp-config.php
+sudo sed -i "s/'DB_PASSWORD'.*$/'DB_PASSWORD', '$DBPassword' );/g" /var/www/html/wp-config.php
+sudo sed -i "s/'DB_HOST'.*$/'DB_HOST', '$DBEndpoint' );/g" /var/www/html/wp-config.php
 
 cat >> /home/ec2-user/update_wp_ip.sh<< 'EOF'
 #!/bin/bash
@@ -73,23 +65,3 @@ EOF
 chmod 755 /home/ec2-user/update_wp_ip.sh
 echo "/home/ec2-user/update_wp_ip.sh" >> /etc/rc.local
 /home/ec2-user/update_wp_ip.sh
-
-# sudo bash
-#
-# EFSFSID=$(aws ssm get-parameters --region us-east-1 --names /A4L/Wordpress/EFSFSID --query Parameters[0].Value)
-# EFSFSID=`echo $EFSFSID | sed -e 's/^"//' -e 's/"$//'`
-#
-# mkdir -p /var/www/html/wp-content
-# chown -R ec2-user:apache /var/www/
-# echo -e "$EFSFSID:/ /var/www/html/wp-content efs _netdev,tls,iam 0 0" >> /etc/fstab
-# mount -a -t efs defaults
-#
-# usermod -a -G apache ec2-user   
-# chown -R ec2-user:apache /var/www
-# chmod 2775 /var/www
-# find /var/www -type d -exec chmod 2775 {} \;
-# find /var/www -type f -exec chmod 0664 {} \;
-#
-# systemctl restart httpd
-#
-# exit
