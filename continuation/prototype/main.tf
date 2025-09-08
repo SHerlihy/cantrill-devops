@@ -69,7 +69,7 @@ resource "aws_launch_template" "prototype" {
 
   key_name = aws_key_pair.generated_key.key_name
 
-  user_data = filebase64("${path.module}/frontend.sh")
+  user_data = filebase64("${path.module}/user_data.sh")
 }
 
 resource "tls_private_key" "this" {
