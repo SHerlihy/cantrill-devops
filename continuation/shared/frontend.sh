@@ -95,7 +95,6 @@ echo "/home/ec2-user/update_wp_ip.sh" >> /etc/rc.local
 END
 fi
 
-if ! [ $PROD ]; then
 cat <<'EOF'
 
 usermod -a -G apache ec2-user   
@@ -103,6 +102,10 @@ chown -R ec2-user:apache /var/www
 chmod 2775 /var/www
 find /var/www -type d -exec chmod 2775 {} \;
 find /var/www -type f -exec chmod 0664 {} \;
+EOF
+
+if ! [ $PROD ]; then
+cat <<'EOF'
 
 echo "CREATE DATABASE $DBName;" >> /tmp/db.setup
 echo "CREATE USER '$DBUser'@'%' IDENTIFIED BY '$DBPassword';" >> /tmp/db.setup

@@ -35,6 +35,7 @@ data "aws_ami" "amazon_linux_2023" {
 resource "aws_instance" "prototype" {
   launch_template {
     id = aws_launch_template.prototype.id
+    version = "$Latest"
   }
 
   tags = {

@@ -16,7 +16,6 @@ DBEndpoint=$(aws ssm get-parameters --region us-east-1 --names /proto/A4L/Wordpr
 DBEndpoint=`echo $DBEndpoint | sed -e 's/^"//' -e 's/"$//'`
 
 dnf -y update
-
 dnf install wget php-mysqlnd httpd php-fpm php-mysqli mariadb105-server php-json php php-devel stress -y
 
 systemctl enable httpd
