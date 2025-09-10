@@ -3,7 +3,7 @@
 PROD=$1
 PREFIX="\/proto"
 
-if [[ $PROD ]]; then
+if [ -z "$PROD" ]; then
     PREFIX=""
 fi
 
@@ -33,7 +33,7 @@ systemctl enable httpd
 systemctl start httpd
 EOF
 
-if ! [ $PROD ]; then
+if ! [ -z "$PROD" ]; then
 cat <<'EOF'
 
 systemctl enable mariadb
@@ -59,7 +59,7 @@ sudo sed -i "s/'DB_PASSWORD'.*$/'DB_PASSWORD', '$DBPassword' );/g" /var/www/html
 sudo sed -i "s/'DB_HOST'.*$/'DB_HOST', '$DBEndpoint' );/g" /var/www/html/wp-config.php
 EOF
 
-if [[ $PROD ]]; then
+if [ -z "$PROD" ]; then
 cat <<'END'
 
 cat >> /home/ec2-user/update_wp_ip.sh<< 'EOF'
@@ -104,7 +104,7 @@ find /var/www -type d -exec chmod 2775 {} \;
 find /var/www -type f -exec chmod 0664 {} \;
 EOF
 
-if ! [ $PROD ]; then
+if ! [ -z "$PROD" ]; then
 cat <<'EOF'
 
 echo "CREATE DATABASE $DBName;" >> /tmp/db.setup
